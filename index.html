@@ -40,55 +40,35 @@
 
 <h2>GEO 在庫チェッカー</h2>
 
-<label>商品番号（複数OK）：</label><br>
-<textarea id="codes" rows="4" placeholder="例：5103502"></textarea><br>
+<label>商品ID（複数行 OK）</label><br>
+<textarea id="ids" rows="4" placeholder="例：5194150"></textarea><br>
 
-<label>都道府県：</label><br>
-<select id="pref">
-    <option value="">選択してください</option>
-    <option>北海道</option><option>青森県</option><option>岩手県</option><option>宮城県</option>
-    <option>秋田県</option><option>山形県</option><option>福島県</option><option>茨城県</option>
-    <option>栃木県</option><option>群馬県</option><option>埼玉県</option><option>千葉県</option>
-    <option>東京都</option><option>神奈川県</option><option>新潟県</option><option>富山県</option>
-    <option>石川県</option><option>福井県</option><option>山梨県</option><option>長野県</option>
-    <option>岐阜県</option><option>静岡県</option><option>愛知県</option><option>三重県</option>
-    <option>滋賀県</option><option>京都府</option><option>大阪府</option><option>兵庫県</option>
-    <option>奈良県</option><option>和歌山県</option><option>鳥取県</option><option>島根県</option>
-    <option>岡山県</option><option>広島県</option><option>山口県</option><option>徳島県</option>
-    <option>香川県</option><option>愛媛県</option><option>高知県</option><option>福岡県</option>
-    <option>佐賀県</option><option>長崎県</option><option>熊本県</option><option>大分県</option>
-    <option>宮崎県</option><option>鹿児島県</option><option>沖縄県</option>
-</select><br>
+<label>店舗URL（任意）</label><br>
+<input id="storeUrl" type="text" placeholder="例：https://geo-online.co.jp/store_info/item/xxxxxx/"><br>
 
 <button onclick="checkStock()">在庫チェック</button>
 
-<div id="result" class="result"></div>
+<div class="result" id="resultArea"></div>
 
 <script>
 async function checkStock() {
-    const result = document.getElementById("result");
-    result.innerHTML = "検索中…";
-
-    const pref = document.getElementById("pref").value;
-    const codes = document.getElementById("codes").value
-        .split("\n")
-        .map(c => c.trim())
-        .filter(c => c);
-
-    if (!pref || codes.length === 0) {
-        result.innerHTML = "商品番号と都道府県を入力してください。";
-        return;
-    }
+    const ids = document.getElementById("ids").value.trim().split("\n");
+    const baseUrl = document.getElementById("storeUrl").value.trim();
+    const result = document.getElementById("resultArea");
+    result.innerHTML = "チェック中...";
 
     let html = "";
-    for (const code of codes) {
-        const url = `https://geo-online.co.jp/store_info/item/${code}/?clk=store_info_search`;
 
-        html += `<h3>商品番号: ${code}</h3>`;
-        html += `<a href="${url}" target="_blank">GEO商品ページを開く</a><br><br>`;
+    for (let id of ids) {
+        id = id.trim();
+        if (!id) continue;
+
+        let url = baseUrl || `https://geo-online.co.jp/store_info/item/${id}/`;
+        html += `<b>商品ID：${id}</b><br>`;
+        html += `URL：<a href="${url}" target="_blank">${url}</a><br><hr>`;
     }
 
-    result.innerHTML = html;
+    result.innerHTML = html || "入力がありません。";
 }
 </script>
 
