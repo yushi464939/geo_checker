@@ -1,160 +1,96 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>GEO在庫チェッカー（シンプル版）</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
-      margin: 0;
-      padding: 16px;
-      background: #f7f7f7;
-    }
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-      background: #fff;
-      padding: 16px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.08);
-    }
-    h1 {
-      font-size: 20px;
-      margin: 0 0 16px;
-      text-align: center;
-    }
-    label {
-      display: block;
-      font-size: 14px;
-      margin-bottom: 4px;
-    }
-    textarea, input, select, button {
-      width: 100%;
-      box-sizing: border-box;
-      font-size: 16px;
-      padding: 8px;
-      margin-bottom: 12px;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-    }
-    textarea {
-      min-height: 80px;
-    }
-    button {
-      background: #007bff;
-      color: #fff;
-      border: none;
-      font-weight: bold;
-    }
-    button:active {
-      opacity: 0.8;
-    }
-    .note {
-      font-size: 12px;
-      color: #666;
-      margin-top: -6px;
-      margin-bottom: 12px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>GEO在庫チェッカー（シンプル版）</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 20px;
+            padding: 0;
+            background: #f7f7f7;
+        }
+        h2 {
+            margin-bottom: 10px;
+        }
+        input, button, select, textarea {
+            font-size: 18px;
+            padding: 8px;
+            margin: 5px 0;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h1>GEO 在庫チェッカー</h1>
 
-    <label for="productIds">商品番号（複数行OK）：</label>
-    <textarea id="productIds" placeholder="例：5194150&#10;改行して複数入力も可"></textarea>
-    <div class="note">※1行につき1つの商品番号</div>
+<h2>GEO 在庫チェッカー</h2>
 
-    <label for="pref">都道府県：</label>
-    <select id="pref">
-      <option value="">都道府県を選択</option>
-      <option value="1">北海道</option>
-      <option value="2">青森県</option>
-      <option value="3">岩手県</option>
-      <option value="4">宮城県</option>
-      <option value="5">秋田県</option>
-      <option value="6">山形県</option>
-      <option value="7">福島県</option>
-      <option value="8">茨城県</option>
-      <option value="9">栃木県</option>
-      <option value="10">群馬県</option>
-      <option value="11">埼玉県</option>
-      <option value="12">千葉県</option>
-      <option value="13">東京都</option>
-      <option value="14">神奈川県</option>
-      <option value="15">新潟県</option>
-      <option value="16">富山県</option>
-      <option value="17">石川県</option>
-      <option value="18">福井県</option>
-      <option value="19">山梨県</option>
-      <option value="20">長野県</option>
-      <option value="21">岐阜県</option>
-      <option value="22">静岡県</option>
-      <option value="23">愛知県</option>
-      <option value="24">三重県</option>
-      <option value="25">滋賀県</option>
-      <option value="26">京都府</option>
-      <option value="27">大阪府</option>
-      <option value="28">兵庫県</option>
-      <option value="29">奈良県</option>
-      <option value="30">和歌山県</option>
-      <option value="31">鳥取県</option>
-      <option value="32">島根県</option>
-      <option value="33">岡山県</option>
-      <option value="34">広島県</option>
-      <option value="35">山口県</option>
-      <option value="36">徳島県</option>
-      <option value="37">香川県</option>
-      <option value="38">愛媛県</option>
-      <option value="39">高知県</option>
-      <option value="40">福岡県</option>
-      <option value="41">佐賀県</option>
-      <option value="42">長崎県</option>
-      <option value="43">熊本県</option>
-      <option value="44">大分県</option>
-      <option value="45">宮崎県</option>
-      <option value="46">鹿児島県</option>
-      <option value="47">沖縄県</option>
-    </select>
+<label>商品番号（複数OK）：</label><br>
+<textarea id="codes" rows="4" placeholder="例：5103502"></textarea><br>
 
-    <button id="checkBtn">在庫チェック</button>
-    <div class="note">
-      ボタンを押すと GEO の店舗在庫検索ページを開きます。<br>
-      複数の商品番号を入れた場合、タブがたくさん開くことがあります。
-    </div>
-  </div>
+<label>都道府県：</label><br>
+<select id="pref">
+    <option value="">選択してください</option>
+    <option>北海道</option><option>青森県</option><option>岩手県</option><option>宮城県</option>
+    <option>秋田県</option><option>山形県</option><option>福島県</option><option>茨城県</option>
+    <option>栃木県</option><option>群馬県</option><option>埼玉県</option><option>千葉県</option>
+    <option>東京都</option><option>神奈川県</option><option>新潟県</option><option>富山県</option>
+    <option>石川県</option><option>福井県</option><option>山梨県</option><option>長野県</option>
+    <option>岐阜県</option><option>静岡県</option><option>愛知県</option><option>三重県</option>
+    <option>滋賀県</option><option>京都府</option><option>大阪府</option><option>兵庫県</option>
+    <option>奈良県</option><option>和歌山県</option><option>鳥取県</option><option>島根県</option>
+    <option>岡山県</option><option>広島県</option><option>山口県</option><option>徳島県</option>
+    <option>香川県</option><option>愛媛県</option><option>高知県</option><option>福岡県</option>
+    <option>佐賀県</option><option>長崎県</option><option>熊本県</option><option>大分県</option>
+    <option>宮崎県</option><option>鹿児島県</option><option>沖縄県</option>
+</select><br>
 
-  <script>
-    document.getElementById('checkBtn').addEventListener('click', () => {
-      const productText = document.getElementById('productIds').value.trim();
-      const pref = document.getElementById('pref').value;
+<button onclick="checkStock()">在庫チェック</button>
 
-      if (!productText) {
-        alert('商品番号を入力してください');
+<div id="result" class="result"></div>
+
+<script>
+async function checkStock() {
+    const result = document.getElementById("result");
+    result.innerHTML = "検索中…";
+
+    const pref = document.getElementById("pref").value;
+    const codes = document.getElementById("codes").value
+        .split("\n")
+        .map(c => c.trim())
+        .filter(c => c);
+
+    if (!pref || codes.length === 0) {
+        result.innerHTML = "商品番号と都道府県を入力してください。";
         return;
-      }
-      if (!pref) {
-        alert('都道府県を選択してください');
-        return;
-      }
+    }
 
-      const ids = productText.split(/\s+/).filter(Boolean);
+    let html = "";
+    for (const code of codes) {
+        const url = `https://geo-online.co.jp/store_info/item/${code}/?clk=store_info_search`;
 
-      ids.forEach((id, index) => {
-        const url =
-          'https://geo-online.co.jp/store_info/search?ismap=0&ps=30'
-          + '&keyword=' + encodeURIComponent(id)
-          + '&pref=' + encodeURIComponent(pref);
+        html += `<h3>商品番号: ${code}</h3>`;
+        html += `<a href="${url}" target="_blank">GEO商品ページを開く</a><br><br>`;
+    }
 
-        // 1つ目は同じタブで開く、2つ目以降は新しいタブを試みる
-        if (index === 0) {
-          window.location.href = url;
-        } else {
-          window.open(url, '_blank');
-        }
-      });
-    });
-  </script>
+    result.innerHTML = html;
+}
+</script>
+
 </body>
 </html>
