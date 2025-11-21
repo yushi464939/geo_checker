@@ -1,74 +1,121 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <title>GEO在庫チェッカー（シンプル版）</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-            margin: 20px;
-            padding: 0;
-            background: #f7f7f7;
-        }
-        h2 {
-            margin-bottom: 10px;
-        }
-        input, button, select, textarea {
-            font-size: 18px;
-            padding: 8px;
-            margin: 5px 0;
-        }
-        button {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        .result {
-            margin-top: 20px;
-            padding: 10px;
-            background: white;
-            border-radius: 5px;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>GEO 在庫チェッカー</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body {
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    margin: 20px;
+    background: #f7f7f7;
+}
+h2 {
+    margin-bottom: 10px;
+}
+input, button, textarea, select {
+    font-size: 18px;
+    padding: 10px;
+    width: 100%;
+    margin-bottom: 15px;
+    box-sizing: border-box;
+}
+button {
+    background: #007bff;
+    border: none;
+    color: #fff;
+    border-radius: 6px;
+}
+#result {
+    margin-top: 20px;
+    padding: 10px;
+}
+.item-block {
+    background: #fff;
+    padding: 12px;
+    margin-bottom: 12px;
+    border-radius: 6px;
+    border-left: 5px solid #28a745;
+}
+</style>
+
+<!-- パスワードロック -->
+<script>
+let unlocked = false;
+const PASSWORD = "①";  // ← あなたのパスワード
+
+function checkPassword() {
+    const pw = prompt("パスワードを入力してください：");
+    if (pw === PASSWORD) {
+        unlocked = true;
+        document.getElementById("app").style.display = "block";
+    } else {
+        alert("パスワードが違います");
+        location.reload();
+    }
+}
+</script>
+
 </head>
-<body>
+<body onload="checkPassword()">
+
+<div id="app" style="display:none;">
 
 <h2>GEO 在庫チェッカー</h2>
 
-<label>商品ID（複数行 OK）</label><br>
-<textarea id="ids" rows="4" placeholder="例：5194150"></textarea><br>
-
-<label>店舗URL（任意）</label><br>
-<input id="storeUrl" type="text" placeholder="例：https://geo-online.co.jp/store_info/item/xxxxxx/"><br>
+<textarea id="itemList" rows="6" placeholder="商品ID を複数行で入力（例：5194150）"></textarea>
+<input id="shopUrl" placeholder="店舗URL（任意） 例：https://geo-online.co.jp">
 
 <button onclick="checkStock()">在庫チェック</button>
 
-<div class="result" id="resultArea"></div>
+<div id="result"></div>
+
+</div>
 
 <script>
+async function fetchProductName(id) {
+    try {
+        const res = await fetch("https://geo-online.co.jp/store_info/item/" + id);
+        const text = await res.text();
+
+        const m = text.match(/<h1[^>]*>(.*?)<\/h1>/);
+        return m ? m[1].trim() : "(商品名取得不可)";
+    } catch {
+        return "(取得エラー)";
+    }
+}
+
 async function checkStock() {
-    const ids = document.getElementById("ids").value.trim().split("\n");
-    const baseUrl = document.getElementById("storeUrl").value.trim();
-    const result = document.getElementById("resultArea");
-    result.innerHTML = "チェック中...";
+    const result = document.getElementById("result");
+    result.innerHTML = "検索中…";
+
+    const ids = document.getElementById("itemList").value
+                .split("\n")
+                .map(t => t.trim())
+                .filter(t => t);
+
+    if (ids.length === 0) {
+        result.innerHTML = "商品IDを入力してください";
+        return;
+    }
 
     let html = "";
 
     for (let id of ids) {
-        id = id.trim();
-        if (!id) continue;
+        const name = await fetchProductName(id);
 
-        let url = baseUrl || `https://geo-online.co.jp/store_info/item/${id}/`;
-        html += `<b>商品ID：${id}</b><br>`;
-        html += `URL：<a href="${url}" target="_blank">${url}</a><br><hr>`;
+        const url = `https://geo-online.co.jp/store_info/item/${id}`;
+        html += `
+        <div class="item-block">
+            <strong>${name}</strong><br>
+            商品ID：${id}<br>
+            <a href="${url}" target="_blank">在庫ページを開く</a>
+        </div>
+        `;
     }
 
-    result.innerHTML = html || "入力がありません。";
+    result.innerHTML = html;
 }
 </script>
 
