@@ -1,216 +1,209 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8" />
-<title>GEO 在庫チェッカー（拡張版）</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <title>GEO 在庫チェッカー（拡張版）</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<style>
-    body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        margin: 20px;
-        background: #f5f5f5;
-    }
-    h2 {
-        margin-bottom: 10px;
-    }
-    input, button, select, textarea {
-        font-size: 18px;
-        padding: 8px;
-        width: 100%;
-        margin-bottom: 10px;
-    }
-    button {
-        background: #007bff;
-        color: white;
-        border: none;
-        border-radius: 6px;
-        padding: 10px;
-    }
-    button.small {
-        width: auto;
-        padding: 5px 10px;
-        margin-left: 5px;
-        font-size: 14px;
-    }
-    .item-box {
-        background: white;
-        padding: 10px;
-        border-radius: 6px;
-        margin-bottom: 10px;
-    }
-    .stock-yes {
-        color: green;
-        font-weight: bold;
-    }
-</style>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+
+        h2 {
+            margin-bottom: 10px;
+        }
+
+        input, button, select, textarea {
+            font-size: 18px;
+            padding: 10px;
+            margin-bottom: 15px;
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        #resultBox {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+        }
+
+        .itemBox {
+            background: #e8f7e4;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border-left: 5px solid #28a745;
+        }
+    </style>
 </head>
-
 <body>
+    <h2>GEO 在庫チェッカー（拡張版）</h2>
 
-<h2>🔐 パスワード入力</h2>
-<input id="pass" type="password" placeholder="パスワードを入力">
-<button onclick="login()">ログイン</button>
+    <!-- パスワード入力 -->
+    <div id="loginBox">
+        <label>パスワード：</label>
+        <input type="password" id="passwordInput" placeholder="パスワードを入力">
+        <button onclick="checkPassword()">ログイン</button>
+    </div>
 
-<div id="main" style="display:none;">
-    <h2>📦 商品登録リスト</h2>
-    <input id="addId" placeholder="商品ID（例：5194150）">
-    <button onclick="addItem()">追加</button>
+    <!-- ログイン後に表示されるメイン画面 -->
+    <div id="mainBox" style="display:none;">
 
-    <h3>登録済み商品</h3>
-    <div id="itemList"></div>
+        <h3>商品IDリスト（A）</h3>
+        <textarea id="itemList" rows="6" placeholder="例：5194150&#10;1234567&#10;9876543"></textarea>
 
-    <h2>都道府県</h2>
-    <select id="pref">
-        <option value="">全国</option>
-        <option>北海道</option><option>青森県</option><option>岩手県</option><option>宮城県</option>
-        <option>秋田県</option><option>山形県</option><option>福島県</option><option>茨城県</option>
-        <option>栃木県</option><option>群馬県</option><option>埼玉県</option><option>千葉県</option>
-        <option>東京都</option><option>神奈川県</option><option>新潟県</option><option>富山県</option>
-        <option>石川県</option><option>福井県</option><option>山梨県</option><option>長野県</option>
-        <option>岐阜県</option><option>静岡県</option><option>愛知県</option><option>三重県</option>
-        <option>滋賀県</option><option>京都府</option><option>大阪府</option><option>兵庫県</option>
-        <option>奈良県</option><option>和歌山県</option><option>鳥取県</option><option>島根県</option>
-        <option>岡山県</option><option>広島県</option><option>山口県</option><option>徳島県</option>
-        <option>香川県</option><option>愛媛県</option><option>高知県</option><option>福岡県</option>
-        <option>佐賀県</option><option>長崎県</option><option>熊本県</option><option>大分県</option>
-        <option>宮崎県</option><option>鹿児島県</option><option>沖縄県</option>
-    </select>
+        <h3>都道府県（任意）</h3>
+        <select id="prefSelect">
+            <option value="">全国</option>
+            <option>北海道</option>
+            <option>青森県</option>
+            <option>岩手県</option>
+            <option>宮城県</option>
+            <option>秋田県</option>
+            <option>山形県</option>
+            <option>福島県</option>
+            <option>茨城県</option>
+            <option>栃木県</option>
+            <option>群馬県</option>
+            <option>埼玉県</option>
+            <option>千葉県</option>
+            <option>東京都</option>
+            <option>神奈川県</option>
+            <option>新潟県</option>
+            <option>富山県</option>
+            <option>石川県</option>
+            <option>福井県</option>
+            <option>山梨県</option>
+            <option>長野県</option>
+            <option>岐阜県</option>
+            <option>静岡県</option>
+            <option>愛知県</option>
+            <option>三重県</option>
+            <option>滋賀県</option>
+            <option>京都府</option>
+            <option>大阪府</option>
+            <option>兵庫県</option>
+            <option>奈良県</option>
+            <option>和歌山県</option>
+            <option>鳥取県</option>
+            <option>島根県</option>
+            <option>岡山県</option>
+            <option>広島県</option>
+            <option>山口県</option>
+            <option>徳島県</option>
+            <option>香川県</option>
+            <option>愛媛県</option>
+            <option>高知県</option>
+            <option>福岡県</option>
+            <option>佐賀県</option>
+            <option>長崎県</option>
+            <option>熊本県</option>
+            <option>大分県</option>
+            <option>宮崎県</option>
+            <option>鹿児島県</option>
+            <option>沖縄県</option>
+        </select>
 
-    <button onclick="checkAll()">在庫チェック（登録商品まとめて）</button>
+        <h3>店舗URL（任意）</h3>
+        <input type="text" id="storeUrl" placeholder="例：https://geo-online.co.jp">
 
-    <h2>在庫結果（在庫ありのみ）</h2>
-    <div id="result"></div>
-</div>
+        <button onclick="checkStock()">在庫チェック</button>
 
+        <div id="resultBox"></div>
+    </div>
 <script>
-// ------------------------
-// パスワード認証
-// ------------------------
-function login() {
-    if (document.getElementById("pass").value === "1") {
-        document.getElementById("main").style.display = "block";
+/* --------------------------
+   パスワード認証（①）
+--------------------------- */
+function checkPassword() {
+    const pass = document.getElementById("password").value;
+    if (pass === "1") {
+        document.getElementById("loginBox").style.display = "none";
+        document.getElementById("mainBox").style.display = "block";
     } else {
         alert("パスワードが違います");
     }
 }
 
-// ------------------------
-// 商品リスト保存
-// ------------------------
-function loadList() {
-    const list = JSON.parse(localStorage.getItem("items") || "[]");
-    displayList(list);
-}
-function saveList(list) {
-    localStorage.setItem("items", JSON.stringify(list));
-}
-function addItem() {
-    let id = document.getElementById("addId").value.trim();
-    if (!id) return alert("商品IDを入力して下さい");
-    let list = JSON.parse(localStorage.getItem("items") || "[]");
-    list.push({ id });
-    saveList(list);
-    displayList(list);
-    document.getElementById("addId").value = "";
-}
-
-// ------------------------
-// 商品リスト表示 & 並び替え
-// ------------------------
-function displayList(list) {
-    const box = document.getElementById("itemList");
-    box.innerHTML = "";
-    list.forEach((item, i) => {
-        let div = document.createElement("div");
-        div.className = "item-box";
-        div.innerHTML = `
-            <b>ID: ${item.id}</b>
-            <button class="small" onclick="delItem(${i})">削除</button>
-            <button class="small" onclick="moveUp(${i})">↑</button>
-            <button class="small" onclick="moveDown(${i})">↓</button>
-        `;
-        box.appendChild(div);
-    });
-}
-function delItem(i) {
-    let list = JSON.parse(localStorage.getItem("items") || "[]");
-    list.splice(i, 1);
-    saveList(list);
-    displayList(list);
-}
-function moveUp(i) {
-    let list = JSON.parse(localStorage.getItem("items") || "[]");
-    if (i === 0) return;
-    [list[i], list[i - 1]] = [list[i - 1], list[i]];
-    saveList(list);
-    displayList(list);
-}
-function moveDown(i) {
-    let list = JSON.parse(localStorage.getItem("items") || "[]");
-    if (i === list.length - 1) return;
-    [list[i], list[i + 1]] = [list[i + 1], list[i]];
-    saveList(list);
-    displayList(list);
-}
-
-// ------------------------
-// 商品名の自動取得
-// ------------------------
-async function getItemName(id) {
+/* --------------------------
+   商品名の自動取得（仮）
+--------------------------- */
+async function getItemName(itemId) {
     try {
-        let url = `https://geo-online.co.jp/store_info/item/${id}/`;
-        let html = await (await fetch(url)).text();
-        let title = html.match(/<title>(.*?)<\/title>/);
-        if (!title) return "商品名不明";
-        return title[1].replace("｜ゲオオンラインストア", "").trim();
-    } catch {
-        return "商品名不明";
+        let res = await fetch(`https://geo-online.co.jp/ec/api/v1/products/${itemId}`);
+        if (!res.ok) return "商品名取得エラー";
+        let data = await res.json();
+        return data.product_name || "商品名なし";
+    } catch (e) {
+        return "取得失敗";
     }
 }
 
-// ------------------------
-// 在庫チェック
-// ------------------------
-async function checkAll() {
-    let pref = document.getElementById("pref").value;
-    let list = JSON.parse(localStorage.getItem("items") || "[]");
+/* --------------------------
+   在庫チェック（Aリスト一括）
+--------------------------- */
+async function checkStock() {
+    const listText = document.getElementById("itemList").value.trim();
+    const storeURL = document.getElementById("storeUrl").value.trim();
+    const pref = document.getElementById("prefSelect").value;
 
-    let resultBox = document.getElementById("result");
+    if (!listText) {
+        alert("商品IDを入力してください");
+        return;
+    }
+
+    const ids = listText.split(/\n/).map(v => v.trim()).filter(v => v);
+    let resultBox = document.getElementById("resultBox");
     resultBox.innerHTML = "検索中…";
 
-    let out = "";
+    let html = "";
 
-    for (let item of list) {
-        let name = await getItemName(item.id);
-        let url = `https://geo-online.co.jp/store_info/item/${item.id}/`;
+    for (let id of ids) {
+        let itemName = await getItemName(id);
+
+        let searchURL = "";
+        if (storeURL) {
+            searchURL = `${storeURL}/store_info/item/${id}/`;
+        } else {
+            searchURL = `https://geo-online.co.jp/store_info/item/${id}/`;
+        }
 
         try {
-            let html = await (await fetch(url)).text();
-
-            // 在庫あり判定（GEOは「在庫あり」表記がある）
-            let stock = html.includes("在庫あり");
-
-            if (stock) {
-                out += `
-                <div class="item-box">
-                    <span class="stock-yes">● 在庫あり</span><br>
-                    <b>${name}</b><br>
-                    商品ID: ${item.id}<br>
-                    <a href="${url}" target="_blank">商品ページ</a>
-                </div>`;
+            let res = await fetch(searchURL);
+            if (!res.ok) {
+                html += `<div class="itemBox">ID:${id}（${itemName}） → 取得失敗</div>`;
+                continue;
             }
-        } catch {
-            out += `<div class="item-box">取得エラー（ID: ${item.id}）</div>`;
+
+            let text = await res.text();
+
+            // 在庫あり判定
+            let hasStock = text.includes("在庫あり") || text.includes("○");
+
+            // 都道府県フィルタ
+            if (pref && !text.includes(pref)) continue;
+
+            if (hasStock) {
+                html += `
+                    <div class="itemBox">
+                        <strong>${itemName}</strong><br>
+                        商品ID：${id}<br>
+                        <a href="${searchURL}" target="_blank">在庫ページを見る</a>
+                    </div>`;
+            }
+
+        } catch (e) {
+            html += `<div class="itemBox">ID:${id}（${itemName}） → エラー</div>`;
         }
     }
 
-    resultBox.innerHTML = out || "在庫ありの商品はありませんでした。";
+    resultBox.innerHTML = html || "在庫のある商品はありませんでした";
 }
-
-// 初期ロード
-loadList();
-</script>
-
-</body>
+</script></body>
 </html>
