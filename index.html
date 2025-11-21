@@ -1,122 +1,215 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<title>GEO 在庫チェッカー</title>
+<meta charset="UTF-8" />
+<title>GEO 在庫チェッカー（拡張版）</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
-body {
-    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-    margin: 20px;
-    background: #f7f7f7;
-}
-h2 {
-    margin-bottom: 10px;
-}
-input, button, textarea, select {
-    font-size: 18px;
-    padding: 10px;
-    width: 100%;
-    margin-bottom: 15px;
-    box-sizing: border-box;
-}
-button {
-    background: #007bff;
-    border: none;
-    color: #fff;
-    border-radius: 6px;
-}
-#result {
-    margin-top: 20px;
-    padding: 10px;
-}
-.item-block {
-    background: #fff;
-    padding: 12px;
-    margin-bottom: 12px;
-    border-radius: 6px;
-    border-left: 5px solid #28a745;
-}
-</style>
-
-<!-- パスワードロック -->
-<script>
-let unlocked = false;
-const PASSWORD = "①";  // ← あなたのパスワード
-
-function checkPassword() {
-    const pw = prompt("パスワードを入力してください：");
-    if (pw === PASSWORD) {
-        unlocked = true;
-        document.getElementById("app").style.display = "block";
-    } else {
-        alert("パスワードが違います");
-        location.reload();
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        margin: 20px;
+        background: #f5f5f5;
     }
-}
-</script>
-
+    h2 {
+        margin-bottom: 10px;
+    }
+    input, button, select, textarea {
+        font-size: 18px;
+        padding: 8px;
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    button {
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 10px;
+    }
+    button.small {
+        width: auto;
+        padding: 5px 10px;
+        margin-left: 5px;
+        font-size: 14px;
+    }
+    .item-box {
+        background: white;
+        padding: 10px;
+        border-radius: 6px;
+        margin-bottom: 10px;
+    }
+    .stock-yes {
+        color: green;
+        font-weight: bold;
+    }
+</style>
 </head>
-<body onload="checkPassword()">
 
-<div id="app" style="display:none;">
+<body>
 
-<h2>GEO 在庫チェッカー</h2>
+<h2>🔐 パスワード入力</h2>
+<input id="pass" type="password" placeholder="パスワードを入力">
+<button onclick="login()">ログイン</button>
 
-<textarea id="itemList" rows="6" placeholder="商品ID を複数行で入力（例：5194150）"></textarea>
-<input id="shopUrl" placeholder="店舗URL（任意） 例：https://geo-online.co.jp">
+<div id="main" style="display:none;">
+    <h2>📦 商品登録リスト</h2>
+    <input id="addId" placeholder="商品ID（例：5194150）">
+    <button onclick="addItem()">追加</button>
 
-<button onclick="checkStock()">在庫チェック</button>
+    <h3>登録済み商品</h3>
+    <div id="itemList"></div>
 
-<div id="result"></div>
+    <h2>都道府県</h2>
+    <select id="pref">
+        <option value="">全国</option>
+        <option>北海道</option><option>青森県</option><option>岩手県</option><option>宮城県</option>
+        <option>秋田県</option><option>山形県</option><option>福島県</option><option>茨城県</option>
+        <option>栃木県</option><option>群馬県</option><option>埼玉県</option><option>千葉県</option>
+        <option>東京都</option><option>神奈川県</option><option>新潟県</option><option>富山県</option>
+        <option>石川県</option><option>福井県</option><option>山梨県</option><option>長野県</option>
+        <option>岐阜県</option><option>静岡県</option><option>愛知県</option><option>三重県</option>
+        <option>滋賀県</option><option>京都府</option><option>大阪府</option><option>兵庫県</option>
+        <option>奈良県</option><option>和歌山県</option><option>鳥取県</option><option>島根県</option>
+        <option>岡山県</option><option>広島県</option><option>山口県</option><option>徳島県</option>
+        <option>香川県</option><option>愛媛県</option><option>高知県</option><option>福岡県</option>
+        <option>佐賀県</option><option>長崎県</option><option>熊本県</option><option>大分県</option>
+        <option>宮崎県</option><option>鹿児島県</option><option>沖縄県</option>
+    </select>
 
+    <button onclick="checkAll()">在庫チェック（登録商品まとめて）</button>
+
+    <h2>在庫結果（在庫ありのみ）</h2>
+    <div id="result"></div>
 </div>
 
 <script>
-async function fetchProductName(id) {
-    try {
-        const res = await fetch("https://geo-online.co.jp/store_info/item/" + id);
-        const text = await res.text();
-
-        const m = text.match(/<h1[^>]*>(.*?)<\/h1>/);
-        return m ? m[1].trim() : "(商品名取得不可)";
-    } catch {
-        return "(取得エラー)";
+// ------------------------
+// パスワード認証
+// ------------------------
+function login() {
+    if (document.getElementById("pass").value === "1") {
+        document.getElementById("main").style.display = "block";
+    } else {
+        alert("パスワードが違います");
     }
 }
 
-async function checkStock() {
-    const result = document.getElementById("result");
-    result.innerHTML = "検索中…";
+// ------------------------
+// 商品リスト保存
+// ------------------------
+function loadList() {
+    const list = JSON.parse(localStorage.getItem("items") || "[]");
+    displayList(list);
+}
+function saveList(list) {
+    localStorage.setItem("items", JSON.stringify(list));
+}
+function addItem() {
+    let id = document.getElementById("addId").value.trim();
+    if (!id) return alert("商品IDを入力して下さい");
+    let list = JSON.parse(localStorage.getItem("items") || "[]");
+    list.push({ id });
+    saveList(list);
+    displayList(list);
+    document.getElementById("addId").value = "";
+}
 
-    const ids = document.getElementById("itemList").value
-                .split("\n")
-                .map(t => t.trim())
-                .filter(t => t);
-
-    if (ids.length === 0) {
-        result.innerHTML = "商品IDを入力してください";
-        return;
-    }
-
-    let html = "";
-
-    for (let id of ids) {
-        const name = await fetchProductName(id);
-
-        const url = `https://geo-online.co.jp/store_info/item/${id}`;
-        html += `
-        <div class="item-block">
-            <strong>${name}</strong><br>
-            商品ID：${id}<br>
-            <a href="${url}" target="_blank">在庫ページを開く</a>
-        </div>
+// ------------------------
+// 商品リスト表示 & 並び替え
+// ------------------------
+function displayList(list) {
+    const box = document.getElementById("itemList");
+    box.innerHTML = "";
+    list.forEach((item, i) => {
+        let div = document.createElement("div");
+        div.className = "item-box";
+        div.innerHTML = `
+            <b>ID: ${item.id}</b>
+            <button class="small" onclick="delItem(${i})">削除</button>
+            <button class="small" onclick="moveUp(${i})">↑</button>
+            <button class="small" onclick="moveDown(${i})">↓</button>
         `;
+        box.appendChild(div);
+    });
+}
+function delItem(i) {
+    let list = JSON.parse(localStorage.getItem("items") || "[]");
+    list.splice(i, 1);
+    saveList(list);
+    displayList(list);
+}
+function moveUp(i) {
+    let list = JSON.parse(localStorage.getItem("items") || "[]");
+    if (i === 0) return;
+    [list[i], list[i - 1]] = [list[i - 1], list[i]];
+    saveList(list);
+    displayList(list);
+}
+function moveDown(i) {
+    let list = JSON.parse(localStorage.getItem("items") || "[]");
+    if (i === list.length - 1) return;
+    [list[i], list[i + 1]] = [list[i + 1], list[i]];
+    saveList(list);
+    displayList(list);
+}
+
+// ------------------------
+// 商品名の自動取得
+// ------------------------
+async function getItemName(id) {
+    try {
+        let url = `https://geo-online.co.jp/store_info/item/${id}/`;
+        let html = await (await fetch(url)).text();
+        let title = html.match(/<title>(.*?)<\/title>/);
+        if (!title) return "商品名不明";
+        return title[1].replace("｜ゲオオンラインストア", "").trim();
+    } catch {
+        return "商品名不明";
+    }
+}
+
+// ------------------------
+// 在庫チェック
+// ------------------------
+async function checkAll() {
+    let pref = document.getElementById("pref").value;
+    let list = JSON.parse(localStorage.getItem("items") || "[]");
+
+    let resultBox = document.getElementById("result");
+    resultBox.innerHTML = "検索中…";
+
+    let out = "";
+
+    for (let item of list) {
+        let name = await getItemName(item.id);
+        let url = `https://geo-online.co.jp/store_info/item/${item.id}/`;
+
+        try {
+            let html = await (await fetch(url)).text();
+
+            // 在庫あり判定（GEOは「在庫あり」表記がある）
+            let stock = html.includes("在庫あり");
+
+            if (stock) {
+                out += `
+                <div class="item-box">
+                    <span class="stock-yes">● 在庫あり</span><br>
+                    <b>${name}</b><br>
+                    商品ID: ${item.id}<br>
+                    <a href="${url}" target="_blank">商品ページ</a>
+                </div>`;
+            }
+        } catch {
+            out += `<div class="item-box">取得エラー（ID: ${item.id}）</div>`;
+        }
     }
 
-    result.innerHTML = html;
+    resultBox.innerHTML = out || "在庫ありの商品はありませんでした。";
 }
+
+// 初期ロード
+loadList();
 </script>
 
 </body>
